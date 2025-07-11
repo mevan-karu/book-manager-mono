@@ -97,7 +97,7 @@ const App = () => {
   const checkAuthStatus = async () => {
     try {
       // Check if user is authenticated by calling the userinfo endpoint
-      const response = await fetch('/auth/userinfo');
+      const response = await fetch('/choreo-apis/book-manager/book-manager-frontend/v1/auth/userinfo');
       
       if (response.ok) {
         const userInfo = await response.json();
@@ -126,12 +126,12 @@ const App = () => {
   };
 
   const handleSignIn = () => {
-    window.location.href = '/auth/login';
+    window.location.href = '/choreo-apis/book-manager/book-manager-frontend/v1/auth/login';
   };
 
   const handleSignOut = () => {
     const sessionHint = Cookies.get('session_hint');
-    window.location.href = `/auth/logout${sessionHint ? `?session_hint=${sessionHint}` : ''}`;
+    window.location.href = `/choreo-apis/book-manager/book-manager-frontend/v1/auth/logout${sessionHint ? `?session_hint=${sessionHint}` : ''}`;
   };
 
   const fetchBooks = async () => {
@@ -149,7 +149,7 @@ const App = () => {
       if (!response.ok) {
         if (response.status === 401) {
           // Session expired, redirect to login
-          window.location.href = '/auth/login';
+          window.location.href = '/choreo-apis/book-manager/book-manager-frontend/v1/auth/login';
           return;
         }
         throw new Error('Failed to fetch books');
@@ -182,7 +182,7 @@ const App = () => {
       if (!response.ok) {
         if (response.status === 401) {
           // Session expired, redirect to login
-          window.location.href = '/auth/login';
+          window.location.href = '/choreo-apis/book-manager/book-manager-frontend/v1/auth/login';
           return;
         }
         throw new Error('Failed to add book');
@@ -218,7 +218,7 @@ const App = () => {
       if (!response.ok) {
         if (response.status === 401) {
           // Session expired, redirect to login
-          window.location.href = '/auth/login';
+          window.location.href = '/choreo-apis/book-manager/book-manager-frontend/v1/auth/login';
           return;
         }
         throw new Error('Failed to delete book');
