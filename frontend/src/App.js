@@ -140,7 +140,7 @@ const App = () => {
       setError('');
       
       // Use relative path for Choreo API with session-based auth
-      const response = await fetch('/choreo-apis/book-manager-backend/api/v1/books', {
+      const response = await fetch('/choreo-apis/book-manager/book-manager-backend/v1/api/v1/books', {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -171,7 +171,7 @@ const App = () => {
       setError('');
       setSuccess('');
 
-      const response = await fetch('/choreo-apis/book-manager-backend/api/v1/books', {
+      const response = await fetch('/choreo-apis/book-manager/book-manager-backend/v1/api/v1/books', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -208,7 +208,7 @@ const App = () => {
       setError('');
       setSuccess('');
 
-      const response = await fetch(`/choreo-apis/book-manager-backend/api/v1/books/${bookId}`, {
+      const response = await fetch(`/choreo-apis/book-manager/book-manager-backend/v1/api/v1/books/${bookId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
