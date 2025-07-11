@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: Book Manager API
+  description: A simple API for managing books
+  version: 1.0.0
+servers:
+  - url: /
+    description: Local server
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+  /api/v1/books:
+    get:
+      tags:
+        - Books
+      summary: Get all books
+      responses:
+        '200':
+          description: List of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        '500':
+          description: Internal server error
+    post:
+      tags:
+        - Books
+      summary: Create a new book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookInput'
+      responses:
+        '201':
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+  /api/v1/books/{id}:
+    delete:
+      tags:
+        - Books
+      summary: Delete a book by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Book ID
+      responses:
+        '200':
+          description: Book deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Book deleted successfully
+        '404':
+          description: Book not found
+        '500':
+          description: Internal server error
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the book
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        title:
+          type: string
+          description: Title of the book
+          example: "The Great Gatsby"
+        author:
+          type: string
+          description: Author of the book
+          example: "F. Scott Fitzgerald"
+        isbn:
+          type: string
+          description: ISBN of the book
+          example: "978-0-7432-7356-5"
+      required:
+        - id
+        - title
+        - author
+    BookInput:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Title of the book
+          example: "The Great Gatsby"
+        author:
+          type: string
+          description: Author of the book
+          example: "F. Scott Fitzgerald"
+        isbn:
+          type: string
+          description: ISBN of the book
+          example: "978-0-7432-7356-5"
+      required:
+        - title
+        - author
