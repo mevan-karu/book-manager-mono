@@ -1,5 +1,10 @@
 # +required The configuration file schema version
 schemaVersion: 1.2
+# +optional Dependencies of the component
+dependencies:
+  connectionReferences:
+    - name: connection-book-manager-backend-defaultdb
+      resourceRef: database:book-manager-db/defaultdb
 # +optional Incoming connection details for the component
 endpoints:
   # +required Unique name for the endpoint.

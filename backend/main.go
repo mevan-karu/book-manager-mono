@@ -71,13 +71,13 @@ func main() {
 func initDB() {
 	var err error
 	
-	// Database connection parameters
-	host := getEnv("DB_HOST", "localhost")
-	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USER", "postgres")
-	password := getEnv("DB_PASSWORD", "password")
-	dbname := getEnv("DB_NAME", "bookmanager")
-	sslmode := getEnv("DB_SSLMODE", "disable")
+	// Database connection parameters from Choreo connection
+	host := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_HOSTNAME", "localhost")
+	port := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_PORT", "5432")
+	user := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_USERNAME", "postgres")
+	password := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_PASSWORD", "password")
+	dbname := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_DATABASENAME", "defaultdb")
+	sslmode := getEnv("DB_SSLMODE", "require")
 
 	// Connection string
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
@@ -164,7 +164,7 @@ func createBook(c *gin.Context) {
 
 func deleteBook(c *gin.Context) {
 	id := c.Param("id")
-	
+
 	// Check if book exists
 	var exists bool
 	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM books WHERE id = $1)", id).Scan(&exists)
