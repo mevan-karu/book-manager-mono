@@ -70,7 +70,7 @@ func main() {
 
 func initDB() {
 	var err error
-	
+
 	// Database connection parameters from Choreo connection
 	host := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_HOSTNAME", "localhost")
 	port := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_PORT", "5432")

@@ -1,39 +1,87 @@
 import React, { useState, useEffect } from 'react';
-import { useAuthContext } from '@asgardeo/auth-react';
+import Cookies from 'js-cookie';
 import BookForm from './components/BookForm';
 import BookList from './components/BookList';
 import LoginPage from './components/LoginPage';
 import Header from './components/Header';
 
 const App = () => {
-  const { state, signIn, signOut, getAccessToken } = useAuthContext();
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
 
   useEffect(() => {
-    if (state.isAuthenticated) {
+    if (isAuthenticated) {
       fetchBooks();
     }
-  }, [state.isAuthenticated]);
+  }, [isAuthenticated]);
+
+  const checkAuthStatus = async () => {
+    try {
+      // Check if user is authenticated by calling the userinfo endpoint
+      const response = await fetch('/auth/userinfo');
+      
+      if (response.ok) {
+        const userInfo = await response.json();
+        setUser(userInfo);
+        setIsAuthenticated(true);
+        
+        // Also check for userinfo cookie and clear it if present
+        const encodedUserInfo = Cookies.get('userinfo');
+        if (encodedUserInfo) {
+          const cookieUserInfo = JSON.parse(atob(encodedUserInfo));
+          setUser(cookieUserInfo);
+          // Clear the cookie
+          Cookies.remove('userinfo', { path: '/' });
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      setIsAuthenticated(false);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignIn = () => {
+    window.location.href = '/auth/login';
+  };
+
+  const handleSignOut = () => {
+    const sessionHint = Cookies.get('session_hint');
+    window.location.href = `/auth/logout${sessionHint ? `?session_hint=${sessionHint}` : ''}`;
+  };
 
   const fetchBooks = async () => {
     try {
       setLoading(true);
       setError('');
       
-      const response = await fetch(`${API_BASE_URL}/api/v1/books`, {
+      // Use relative path for Choreo API with session-based auth
+      const response = await fetch('/choreo-apis/book-manager-backend/api/v1/books', {
         headers: {
           'Content-Type': 'application/json',
-          // Add authorization header if needed
-          // 'Authorization': `Bearer ${await getAccessToken()}`
         }
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          // Session expired, redirect to login
+          window.location.href = '/auth/login';
+          return;
+        }
         throw new Error('Failed to fetch books');
       }
 
@@ -53,17 +101,20 @@ const App = () => {
       setError('');
       setSuccess('');
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/books`, {
+      const response = await fetch('/choreo-apis/book-manager-backend/api/v1/books', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Add authorization header if needed
-          // 'Authorization': `Bearer ${await getAccessToken()}`
         },
         body: JSON.stringify(bookData)
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          // Session expired, redirect to login
+          window.location.href = '/auth/login';
+          return;
+        }
         throw new Error('Failed to add book');
       }
 
@@ -87,16 +138,19 @@ const App = () => {
       setError('');
       setSuccess('');
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/books/${bookId}`, {
+      const response = await fetch(`/choreo-apis/book-manager-backend/api/v1/books/${bookId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          // Add authorization header if needed
-          // 'Authorization': `Bearer ${await getAccessToken()}`
         }
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          // Session expired, redirect to login
+          window.location.href = '/auth/login';
+          return;
+        }
         throw new Error('Failed to delete book');
       }
 
@@ -113,8 +167,8 @@ const App = () => {
     }
   };
 
-  // Show loading state during authentication
-  if (state.isLoading) {
+  // Show loading state during authentication check
+  if (isLoading) {
     return (
       <div className="loading">
         <p>Loading...</p>
@@ -123,13 +177,13 @@ const App = () => {
   }
 
   // Show login page if not authenticated
-  if (!state.isAuthenticated) {
-    return <LoginPage onSignIn={signIn} />;
+  if (!isAuthenticated) {
+    return <LoginPage onSignIn={handleSignIn} />;
   }
 
   return (
     <div className="app">
-      <Header user={state.username} onSignOut={signOut} />
+      <Header user={user?.username || user?.name || 'User'} onSignOut={handleSignOut} />
       <main className="main-content">
         {error && (
           <div className="error">
