@@ -1,9 +1,79 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import BookForm from './components/BookForm';
 import BookList from './components/BookList';
 import LoginPage from './components/LoginPage';
 import Header from './components/Header';
+
+// Protected Route Component
+const ProtectedRoute = ({ children, isAuthenticated, isLoading }) => {
+  const location = useLocation();
+  
+  if (isLoading) {
+    return (
+      <div className="loading">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    // Redirect to login with return path
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  return children;
+};
+
+// Login Route Component
+const LoginRoute = ({ isAuthenticated, isLoading, onSignIn }) => {
+  const location = useLocation();
+  
+  if (isLoading) {
+    return (
+      <div className="loading">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  
+  if (isAuthenticated) {
+    // Redirect to intended path or dashboard
+    const from = location.state?.from?.pathname || '/dashboard';
+    return <Navigate to={from} replace />;
+  }
+  
+  return <LoginPage onSignIn={onSignIn} />;
+};
+
+// Dashboard Component (Main Book Management)
+const Dashboard = ({ user, onSignOut, books, loading, error, success, addBook, deleteBook }) => {
+  return (
+    <div className="app">
+      <Header user={user?.username || user?.name || 'User'} onSignOut={onSignOut} />
+      <main className="main-content">
+        {error && (
+          <div className="error">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="success">
+            {success}
+          </div>
+        )}
+        
+        <BookForm onSubmit={addBook} loading={loading} />
+        <BookList 
+          books={books} 
+          onDelete={deleteBook}
+          loading={loading}
+        />
+      </main>
+    </div>
+  );
+};
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -167,43 +237,60 @@ const App = () => {
     }
   };
 
-  // Show loading state during authentication check
-  if (isLoading) {
-    return (
-      <div className="loading">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  // Show login page if not authenticated
-  if (!isAuthenticated) {
-    return <LoginPage onSignIn={handleSignIn} />;
-  }
-
   return (
-    <div className="app">
-      <Header user={user?.username || user?.name || 'User'} onSignOut={handleSignOut} />
-      <main className="main-content">
-        {error && (
-          <div className="error">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="success">
-            {success}
-          </div>
-        )}
-        
-        <BookForm onSubmit={addBook} loading={loading} />
-        <BookList 
-          books={books} 
-          onDelete={deleteBook}
-          loading={loading}
+    <Router>
+      <Routes>
+        {/* Root path redirects based on auth status */}
+        <Route 
+          path="/" 
+          element={
+            isLoading ? (
+              <div className="loading">
+                <p>Loading...</p>
+              </div>
+            ) : isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          } 
         />
-      </main>
-    </div>
+        
+        {/* Login route */}
+        <Route 
+          path="/login" 
+          element={
+            <LoginRoute 
+              isAuthenticated={isAuthenticated}
+              isLoading={isLoading}
+              onSignIn={handleSignIn}
+            />
+          } 
+        />
+        
+        {/* Protected dashboard route */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
+              <Dashboard 
+                user={user}
+                onSignOut={handleSignOut}
+                books={books}
+                loading={loading}
+                error={error}
+                success={success}
+                addBook={addBook}
+                deleteBook={deleteBook}
+              />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Catch all route - redirect to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
 };
 
