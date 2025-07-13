@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -72,11 +71,11 @@ func initDB() {
 	var err error
 
 	// Database connection parameters from Choreo connection
-	host := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_HOSTNAME", "localhost")
-	port := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_PORT", "5432")
-	user := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_USERNAME", "postgres")
-	password := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_PASSWORD", "password")
-	dbname := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_BACKEND_DEFAULTDB_DATABASENAME", "defaultdb")
+	host := getEnv("DB_HOSTNAME", "localhost")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USERNAME", "postgres")
+	password := getEnv("DB_PASSWORD", "password")
+	dbname := getEnv("DB_NAME", "defaultdb")
 	sslmode := getEnv("DB_SSLMODE", "require")
 
 	// Connection string
@@ -116,6 +115,10 @@ func createTables() {
 func getBooks(c *gin.Context) {
 	rows, err := db.Query("SELECT id, title, author, isbn FROM books ORDER BY title")
 	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusOK, []Book{})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch books"})
 		return
 	}
@@ -191,15 +194,6 @@ func deleteBook(c *gin.Context) {
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
-	}
-	return defaultValue
-}
-
-func getEnvAsInt(key string, defaultValue int) int {
-	if value := os.Getenv(key); value != "" {
-		if intValue, err := strconv.Atoi(value); err == nil {
-			return intValue
-		}
 	}
 	return defaultValue
 }
