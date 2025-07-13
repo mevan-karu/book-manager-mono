@@ -1,19 +1,19 @@
-# Backend
-backend/tmp/
-backend/*.log
-backend/.env
+# book-manager-service
+book-manager-service/tmp/
+book-manager-service/*.log
+book-manager-service/.env
 
-# Frontend
-frontend/node_modules/
-frontend/build/
-frontend/dist/
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
-frontend/npm-debug.log*
-frontend/yarn-debug.log*
-frontend/yarn-error.log*
+# book-manager-app
+book-manager-app/node_modules/
+book-manager-app/build/
+book-manager-app/dist/
+book-manager-app/.env.local
+book-manager-app/.env.development.local
+book-manager-app/.env.test.local
+book-manager-app/.env.production.local
+book-manager-app/npm-debug.log*
+book-manager-app/yarn-debug.log*
+book-manager-app/yarn-error.log*
 
 # IDE and OS files
 .vscode/

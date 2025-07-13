@@ -8,8 +8,8 @@ This demo showcases how to vibe deploy a complete 3-tier application on WSO2 Cho
 
 The Book Manager application is a modern 3-tier web application that demonstrates full-stack development and deployment on the Choreo platform. The application consists of:
 
-- **Frontend (Presentation Tier)**: A React-based Single Page Application (SPA)
-- **Backend (Logic Tier)**: A Go-based REST API service that handles business logic and data operations
+- **book-manager-app (Presentation Tier)**: A React-based Single Page Application (SPA)
+- **book-manager-service (Logic Tier)**: A Go-based REST API service that handles business logic and data operations
 - **Database (Data Tier)**: A PostgreSQL database that stores book information and user data
 
 This application allows users to perform create, list and delete operations on a book collection, providing a practical example of how modern web applications can be deployed and managed in a cloud-native environment.
@@ -19,14 +19,14 @@ This application allows users to perform create, list and delete operations on a
 This demonstration follows a structured approach to showcase Choreo MCP server's capabilities:
 
 1. **Create New Project** - Create a new project called "book-manager" in Choreo to organize all components
-2. **Create Service Component** - Set up the Go backend API service in Choreo using the repository's `/backend` directory
+2. **Create Service Component** - Set up the book-manager-service in Choreo using the repository's `/book-manager-service` directory
 3. **Provision PostgreSQL Database** - Create a managed PostgreSQL database instance through Choreo's database services
 4. **Publish the Default Database to Marketplace** - Publish the default database instance in the provisioned database server to the marketplace  
-5. **Create Database Connection** - Create a connection between the backend service and the PostgreSQL database
-6. **Build and Re-deploy Service** - Trigger a new build and deployment of the backend service with database connectivity
+5. **Create Database Connection** - Create a connection between the book-manager-service and the PostgreSQL database
+6. **Build and Re-deploy Service** - Trigger a new build and deployment of the book-manager-service with database connectivity
 7. **Test Service with Test-Key** - Validate API functionality using a test-key
-8. **Create Managed Auth Enabled SPA Component** - Deploy the React frontend as a Single Page Application with built-in authentication enabled
-9. **Connect Webapp to Backend** - Create a connection between the frontend application and the backend API service
+8. **Create Managed Auth Enabled SPA Component** - Deploy the book-manager-app as a Single Page Application with built-in authentication enabled
+9. **Connect book-manager-app to book-manager-service** - Create a connection between the book-manager-app and the book-manager-service
 10. **Add Sample User to IdP** - Configure a test user in Choreo's built-in Identity Provider for authentication testing
 11. **Try out the Book Manager Application** - Access and test the deployed web application using the configured test user to demonstrate end-to-end functionality
 
@@ -40,9 +40,9 @@ Following are the steps and sample prompts to vibe-deploy a 3-tier application i
 Create project book-manager in Choreo
 ```
 
-2. Create Service Component for Backend API
+2. Create Service Component for book-manager-service
 ```
-Create a new REST service component named book-manager-service in Choreo using the `/backend` directory from the repository
+Create a new REST service component named book-manager-service in Choreo using the `/book-manager-service` directory from the repository
 ```
 
 3. Provision PostgreSQL Database
@@ -72,10 +72,10 @@ Tryout adding a book to the book collection using the book-manager-service API u
 
 8. Create Managed Auth Enabled SPA Component
 ```
-Create a REACT SPA webapp component named book-manager-app in book-manager project using the `frontend` directory.
+Create a REACT SPA webapp component named book-manager-app in book-manager project using the `/book-manager-app` directory.
 ```
 
-9. Connect Webapp to Backend
+9. Connect Webapp to book-manager-service
 ```
 Create connection from book-manager-app to the book-manager-service
 ```
