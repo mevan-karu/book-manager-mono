@@ -18,9 +18,9 @@ This application allows users to perform create, list and delete operations on a
 
 This demonstration follows a structured approach to showcase Choreo MCP server's capabilities:
 
-1. **Create New Project** - Create a new project called "book-manager" in Choreo to organize all components
+1. **Create New Project** - Create a new project called "book-manager" in Choreo
 2. **Create Service Component** - Set up the book-manager-service in Choreo using the repository's `/book-manager-service` directory
-3. **Provision PostgreSQL Database** - Create a managed PostgreSQL database instance through Choreo's database services
+3. **Provision PostgreSQL Database** - Create a managed PostgreSQL database server through Choreo's database services
 4. **Publish the Default Database to Marketplace** - Publish the default database instance in the provisioned database server to the marketplace  
 5. **Create Database Connection** - Create a connection between the book-manager-service and the PostgreSQL database
 6. **Build and Re-deploy Service** - Trigger a new build and deployment of the book-manager-service with database connectivity
