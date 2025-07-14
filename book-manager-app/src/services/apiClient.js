@@ -75,18 +75,18 @@ class ApiClient {
 
   // Book API methods
   async getBooks() {
-    return this.request('/books');
+    return this.request('/api/v1/books');
   }
 
   async createBook(bookData) {
-    return this.request('/books', {
+    return this.request('/api/v1/books/books', {
       method: 'POST',
       body: JSON.stringify(bookData),
     });
   }
 
   async deleteBook(bookId) {
-    return this.request(`/books/${bookId}`, {
+    return this.request(`/api/v1/books/${bookId}`, {
       method: 'DELETE',
     });
   }
@@ -96,7 +96,7 @@ class ApiClient {
     try {
       // Try to access the books endpoint instead of health check
       // This is more reliable for checking authentication status
-      await this.request('/books');
+      await this.request('/api/v1/books');
       return true;
     } catch (error) {
       // If we get an authentication error or any error, consider user not authenticated
