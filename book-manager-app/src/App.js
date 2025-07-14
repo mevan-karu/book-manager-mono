@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import apiClient from './services/apiClient';
 import BookForm from './components/BookForm';
 import BookList from './components/BookList';
-import LoginPage from './components/LoginPage';
 import Header from './components/Header';
+
+// Login Page Component
+const LoginPage = () => {
+  return (
+    <div className="login-container">
+      <div className="login-card">
+        <h2>📚 Book Manager</h2>
+        <p>Please log in to manage your books.</p>
+        <button 
+          className="login-btn"
+          onClick={() => {
+            window.location.href = "/auth/login";
+          }}
+        >
+          Login
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // Protected Route Component
 const ProtectedRoute = ({ children, isAuthenticated, isLoading }) => {
-  const location = useLocation();
-  
   if (isLoading) {
     return (
       <div className="loading">
@@ -19,39 +36,17 @@ const ProtectedRoute = ({ children, isAuthenticated, isLoading }) => {
   }
   
   if (!isAuthenticated) {
-    // Redirect to login with return path
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <LoginPage />;
   }
   
   return children;
 };
 
-// Login Route Component
-const LoginRoute = ({ isAuthenticated, isLoading, onSignIn }) => {
-  const location = useLocation();
-  
-  if (isLoading) {
-    return (
-      <div className="loading">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-  
-  if (isAuthenticated) {
-    // Redirect to intended path or dashboard
-    const from = location.state?.from?.pathname || '/dashboard';
-    return <Navigate to={from} replace />;
-  }
-  
-  return <LoginPage onSignIn={onSignIn} />;
-};
-
 // Dashboard Component (Main Book Management)
-const Dashboard = ({ user, onSignOut, books, loading, error, success, addBook, deleteBook }) => {
+const Dashboard = ({ onSignOut, books, loading, error, success, addBook, deleteBook }) => {
   return (
     <div className="app">
-      <Header user={user?.username || user?.name || 'User'} onSignOut={onSignOut} />
+      <Header user="User" onSignOut={onSignOut} />
       <main className="main-content">
         {error && (
           <div className="error">
@@ -76,7 +71,6 @@ const Dashboard = ({ user, onSignOut, books, loading, error, success, addBook, d
 };
 
 const App = () => {
-  const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [books, setBooks] = useState([]);
@@ -96,42 +90,20 @@ const App = () => {
 
   const checkAuthStatus = async () => {
     try {
-      // Check if user is authenticated by calling the userinfo endpoint
-      const response = await fetch('/choreo-apis/book-manager/book-manager-frontend/v1/auth/userinfo');
-      
-      if (response.ok) {
-        const userInfo = await response.json();
-        setUser(userInfo);
-        setIsAuthenticated(true);
-        
-        // Also check for userinfo cookie and clear it if present
-        const encodedUserInfo = Cookies.get('userinfo');
-        if (encodedUserInfo) {
-          const cookieUserInfo = JSON.parse(atob(encodedUserInfo));
-          setUser(cookieUserInfo);
-          // Clear the cookie
-          Cookies.remove('userinfo', { path: '/' });
-        }
-      } else {
-        setIsAuthenticated(false);
-        setUser(null);
-      }
+      setIsLoading(true);
+      const authenticated = await apiClient.checkAuth();
+      setIsAuthenticated(authenticated);
     } catch (error) {
       console.error('Error checking auth status:', error);
       setIsAuthenticated(false);
-      setUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignIn = () => {
-    window.location.href = '/choreo-apis/book-manager/book-manager-frontend/v1/auth/login';
-  };
-
   const handleSignOut = () => {
-    const sessionHint = Cookies.get('session_hint');
-    window.location.href = `/choreo-apis/book-manager/book-manager-frontend/v1/auth/logout${sessionHint ? `?session_hint=${sessionHint}` : ''}`;
+    // Use the proper logout method with session handling
+    apiClient.redirectToLogout();
   };
 
   const fetchBooks = async () => {
@@ -139,25 +111,15 @@ const App = () => {
       setLoading(true);
       setError('');
       
-      // Use relative path for Choreo API with session-based auth
-      const response = await fetch('/choreo-apis/book-manager/book-manager-backend/v1/api/v1/books', {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Session expired, redirect to login
-          window.location.href = '/choreo-apis/book-manager/book-manager-frontend/v1/auth/login';
-          return;
-        }
-        throw new Error('Failed to fetch books');
-      }
-
-      const data = await response.json();
-      setBooks(data || []);
+      const data = await apiClient.getBooks();
+      setBooks(Array.isArray(data) ? data : []);
     } catch (err) {
+      if (err.message === 'Authentication required') {
+        setIsAuthenticated(false);
+        setBooks([]); // Ensure books is always an array
+        return;
+      }
+      setBooks([]); // Ensure books is always an array on error
       setError('Failed to load books. Please try again.');
       console.error('Error fetching books:', err);
     } finally {
@@ -171,30 +133,17 @@ const App = () => {
       setError('');
       setSuccess('');
 
-      const response = await fetch('/choreo-apis/book-manager/book-manager-backend/v1/api/v1/books', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookData)
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Session expired, redirect to login
-          window.location.href = '/choreo-apis/book-manager/book-manager-frontend/v1/auth/login';
-          return;
-        }
-        throw new Error('Failed to add book');
-      }
-
-      const newBook = await response.json();
-      setBooks([...books, newBook]);
+      const newBook = await apiClient.createBook(bookData);
+      setBooks(prevBooks => [...(Array.isArray(prevBooks) ? prevBooks : []), newBook]);
       setSuccess('Book added successfully!');
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
+      if (err.message === 'Authentication required') {
+        setIsAuthenticated(false);
+        return;
+      }
       setError('Failed to add book. Please try again.');
       console.error('Error adding book:', err);
     } finally {
@@ -208,28 +157,17 @@ const App = () => {
       setError('');
       setSuccess('');
 
-      const response = await fetch(`/choreo-apis/book-manager/book-manager-backend/v1/api/v1/books/${bookId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Session expired, redirect to login
-          window.location.href = '/choreo-apis/book-manager/book-manager-frontend/v1/auth/login';
-          return;
-        }
-        throw new Error('Failed to delete book');
-      }
-
-      setBooks(books.filter(book => book.id !== bookId));
+      await apiClient.deleteBook(bookId);
+      setBooks(prevBooks => (Array.isArray(prevBooks) ? prevBooks : []).filter(book => book.id !== bookId));
       setSuccess('Book deleted successfully!');
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
+      if (err.message === 'Authentication required') {
+        setIsAuthenticated(false);
+        return;
+      }
       setError('Failed to delete book. Please try again.');
       console.error('Error deleting book:', err);
     } finally {
@@ -237,35 +175,22 @@ const App = () => {
     }
   };
 
+  // If loading, show loading screen
+  if (isLoading) {
+    return (
+      <div className="loading">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <Routes>
-        {/* Root path redirects based on auth status */}
+        {/* Root path redirects to dashboard */}
         <Route 
           path="/" 
-          element={
-            isLoading ? (
-              <div className="loading">
-                <p>Loading...</p>
-              </div>
-            ) : isAuthenticated ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          } 
-        />
-        
-        {/* Login route */}
-        <Route 
-          path="/login" 
-          element={
-            <LoginRoute 
-              isAuthenticated={isAuthenticated}
-              isLoading={isLoading}
-              onSignIn={handleSignIn}
-            />
-          } 
+          element={<Navigate to="/dashboard" replace />} 
         />
         
         {/* Protected dashboard route */}
@@ -274,7 +199,6 @@ const App = () => {
           element={
             <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
               <Dashboard 
-                user={user}
                 onSignOut={handleSignOut}
                 books={books}
                 loading={loading}
@@ -287,8 +211,8 @@ const App = () => {
           } 
         />
         
-        {/* Catch all route - redirect to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Catch all route - redirect to dashboard */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
   );
