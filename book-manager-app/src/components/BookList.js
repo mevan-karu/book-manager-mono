@@ -1,7 +1,10 @@
 import React from 'react';
 
-const BookList = ({ books, onDelete, loading }) => {
-  if (loading && books.length === 0) {
+const BookList = ({ books = [], onDelete, loading }) => {
+  // Ensure books is always an array
+  const booksList = Array.isArray(books) ? books : [];
+  
+  if (loading && booksList.length === 0) {
     return (
       <div className="books-list">
         <h2>My Book Collection</h2>
@@ -12,7 +15,7 @@ const BookList = ({ books, onDelete, loading }) => {
     );
   }
 
-  if (books.length === 0) {
+  if (booksList.length === 0) {
     return (
       <div className="books-list">
         <h2>My Book Collection</h2>
@@ -26,9 +29,9 @@ const BookList = ({ books, onDelete, loading }) => {
 
   return (
     <div className="books-list">
-      <h2>My Book Collection ({books.length} books)</h2>
+      <h2>My Book Collection ({booksList.length} books)</h2>
       <div className="books-grid">
-        {books.map((book) => (
+        {booksList.map((book) => (
           <div key={book.id} className="book-card">
             <h3>{book.title}</h3>
             <p><strong>Author:</strong> {book.author}</p>
