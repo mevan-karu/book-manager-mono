@@ -2,15 +2,17 @@ import Cookies from 'js-cookie';
 
 // API Client Configuration
 const API_CONFIG = {
-  // Change this base path as needed for your environment
-  basePath: window?.configs?.apiUrl ? window.configs.apiUrl : "/",
   authPath: '/auth/signin', // Separate auth app path
 };
 
 class ApiClient {
   constructor() {
-    this.basePath = API_CONFIG.basePath;
     this.authPath = API_CONFIG.authPath;
+  }
+
+  // Get base path dynamically to ensure window.configs is available
+  getBasePath() {
+    return window?.configs?.apiUrl || "/";
   }
 
   // Configure base path dynamically
@@ -20,7 +22,8 @@ class ApiClient {
 
   // Generic fetch wrapper with authentication handling
   async request(endpoint, options = {}) {
-    const url = `${this.basePath}${endpoint}`;
+    const basePath = this.basePath || this.getBasePath();
+    const url = `${basePath}${endpoint}`;
     
     const defaultOptions = {
       credentials: 'include', // Include cookies for authentication
