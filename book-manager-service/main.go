@@ -71,11 +71,11 @@ func initDB() {
 	var err error
 
 	// Database connection parameters from Choreo connection
-	host := getEnv("DB_HOSTNAME", "localhost")
-	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USERNAME", "postgres")
-	password := getEnv("DB_PASSWORD", "password")
-	dbname := getEnv("DB_NAME", "defaultdb")
+	host := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_SERVICE_DEFAULTDB_HOSTNAME", getEnv("DB_HOSTNAME", "localhost"))
+	port := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_SERVICE_DEFAULTDB_PORT", getEnv("DB_PORT", "5432"))
+	user := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_SERVICE_DEFAULTDB_USERNAME", getEnv("DB_USERNAME", "postgres"))
+	password := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_SERVICE_DEFAULTDB_PASSWORD", getEnv("DB_PASSWORD", "password"))
+	dbname := getEnv("CHOREO_CONNECTION_BOOK_MANAGER_SERVICE_DEFAULTDB_DATABASENAME", getEnv("DB_NAME", "defaultdb"))
 	sslmode := getEnv("DB_SSLMODE", "require")
 
 	// Connection string
