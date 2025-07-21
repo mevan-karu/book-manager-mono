@@ -43,10 +43,10 @@ const ProtectedRoute = ({ children, isAuthenticated, isLoading }) => {
 };
 
 // Dashboard Component (Main Book Management)
-const Dashboard = ({ onSignOut, books, loading, error, success, addBook, deleteBook }) => {
+const Dashboard = ({ onSignOut, books, loading, error, success, addBook, deleteBook, user }) => {
   return (
     <div className="app">
-      <Header user="User" onSignOut={onSignOut} />
+      <Header user={user} onSignOut={onSignOut} />
       <main className="main-content">
         {error && (
           <div className="error">
@@ -73,6 +73,7 @@ const Dashboard = ({ onSignOut, books, loading, error, success, addBook, deleteB
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -84,6 +85,7 @@ const App = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
+      fetchUserInfo();
       fetchBooks();
     }
   }, [isAuthenticated]);
@@ -98,6 +100,15 @@ const App = () => {
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchUserInfo = async () => {
+    try {
+      const userInfo = await apiClient.getUserInfo();
+      setUser(userInfo);
+    } catch (error) {
+      console.error('Error fetching user info:', error);
     }
   };
 
@@ -206,6 +217,7 @@ const App = () => {
                 success={success}
                 addBook={addBook}
                 deleteBook={deleteBook}
+                user={user}
               />
             </ProtectedRoute>
           } 

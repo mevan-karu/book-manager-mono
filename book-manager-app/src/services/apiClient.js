@@ -65,7 +65,7 @@ class ApiClient {
     window.location.href = '/auth/login';
   }
 
-  // Logout with session handling
+  // Logout with session handling according to Choreo docs
   redirectToLogout() {
     const sessionHint = Cookies.get('session_hint');
     window.location.href = `/auth/logout${sessionHint ? `?session_hint=${sessionHint}` : ''}`;
@@ -94,17 +94,59 @@ class ApiClient {
     });
   }
 
-  // Check if user is authenticated by trying to access a protected endpoint
+  // Check if user is authenticated using Choreo's managed auth endpoint
   async checkAuth() {
     try {
-      // Try to access the books endpoint instead of health check
-      // This is more reliable for checking authentication status
-      await this.request('/api/v1/books');
-      return true;
+      // Use Choreo's managed auth userinfo endpoint to check authentication status
+      const response = await fetch('/auth/userinfo', {
+        credentials: 'include', // Include cookies for authentication
+      });
+      
+      if (response.ok) {
+        // User is authenticated, optionally get user info
+        const userInfo = await response.json();
+        console.log('User authenticated:', userInfo);
+        return true;
+      } else if (response.status === 401) {
+        // User is not authenticated
+        return false;
+      } else {
+        // Other error occurred
+        console.error('Auth check failed with status:', response.status);
+        return false;
+      }
     } catch (error) {
-      // If we get an authentication error or any error, consider user not authenticated
+      // Network error or other issue
       console.log('Authentication check failed:', error.message);
       return false;
+    }
+  }
+
+  // Get user information from userinfo cookie (if available) or endpoint
+  async getUserInfo() {
+    try {
+      // First try to get from userinfo cookie
+      const encodedUserInfo = Cookies.get('userinfo');
+      if (encodedUserInfo) {
+        const userInfo = JSON.parse(atob(encodedUserInfo));
+        // Clear the cookie as recommended by Choreo docs
+        Cookies.remove('userinfo', { path: '/' });
+        return userInfo;
+      }
+
+      // If cookie not available, use the endpoint
+      const response = await fetch('/auth/userinfo', {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        return await response.json();
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Failed to get user info:', error);
+      return null;
     }
   }
 }
