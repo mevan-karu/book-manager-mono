@@ -15,6 +15,19 @@ book-manager-app/npm-debug.log*
 book-manager-app/yarn-debug.log*
 book-manager-app/yarn-error.log*
 
+# book-manager-app-oauth
+book-manager-app-oauth/node_modules/
+book-manager-app-oauth/build/
+book-manager-app-oauth/dist/
+book-manager-app-oauth/.env.local
+book-manager-app-oauth/.env.development.local
+book-manager-app-oauth/.env.test.local
+book-manager-app-oauth/.env.production.local
+book-manager-app-oauth/npm-debug.log*  
+book-manager-app-oauth/yarn-debug.log*
+book-manager-app-oauth/yarn-error.log*
+book-manager-app-oauth/public/config.js
+
 # IDE and OS files
 .vscode/
 .idea/

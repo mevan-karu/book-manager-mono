@@ -4,12 +4,12 @@ import BookManager from "./components/BookManager";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 const config = {
-  clientID: process.env.REACT_APP_CLIENT_ID,
-  baseUrl: process.env.REACT_APP_BASE_URL,
+  clientID: window.configs.clientID,
+  baseUrl: window.configs.idpBaseUrl,
   signInRedirectURL: window.location.origin,
   signOutRedirectURL: window.location.origin,
   scope: ["openid", "profile", "email"],
-  resourceServerURLs: [process.env.REACT_APP_API_BASE_URL],
+  resourceServerURLs: [window.configs.bookServiceBaseUrl],
   enablePKCE: true,
   storage: "webWorker", // Use web worker for better security
 };
