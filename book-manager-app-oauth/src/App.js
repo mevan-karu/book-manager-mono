@@ -9,7 +9,7 @@ const config = {
   signInRedirectURL: window.location.origin,
   signOutRedirectURL: window.location.origin,
   scope: ["openid", "profile", "email"],
-  resourceServerURLs: [window.configs.bookServiceBaseUrl],
+  resourceServerURLs: [window.configs.bookServiceBaseUrl, window.configs.idpBaseUrl],
   enablePKCE: true,
   storage: "webWorker", // Use web worker for better security
 };
