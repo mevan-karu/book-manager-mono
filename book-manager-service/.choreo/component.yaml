@@ -1,6 +1,41 @@
 # +required The configuration file schema version
 schemaVersion: 1.2
 
+# +optional Database connection dependencies
+dependencies:
+  connectionReferences:
+    - name: database-connection-book-manager-service
+      resourceRef: database:book-manager-db/bookmgr_dev
+
+# +optional Configuration mappings for environment variables
+configurations:
+  env:
+    - name: DB_HOST
+      valueFrom:
+        connectionRef:
+          name: database-connection-book-manager-service
+          key: HostName
+    - name: DB_PORT
+      valueFrom:
+        connectionRef:
+          name: database-connection-book-manager-service
+          key: Port
+    - name: DB_USERNAME
+      valueFrom:
+        connectionRef:
+          name: database-connection-book-manager-service
+          key: Username
+    - name: DB_PASSWORD
+      valueFrom:
+        connectionRef:
+          name: database-connection-book-manager-service
+          key: Password
+    - name: DB_DATABASENAME
+      valueFrom:
+        connectionRef:
+          name: database-connection-book-manager-service
+          key: DatabaseName
+
 # +optional Incoming connection details for the component
 endpoints:
   # +required Unique name for the endpoint.
